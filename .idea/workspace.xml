@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5373ee0b-3698-4461-82db-2b35026bdb79" name="Changes" comment="feat: create files">
+    <list default="true" id="5373ee0b-3698-4461-82db-2b35026bdb79" name="Changes" comment="feat: create endpoints MLDataFetcher">
+      <change afterPath="$PROJECT_DIR$/downloader/tests/test_downloader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/meli_data_engineer_challenge.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/meli_data_engineer_challenge.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/downloader/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/downloader/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/downloader/downloader.py" beforeDir="false" afterPath="$PROJECT_DIR$/downloader/downloader.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -117,7 +118,7 @@
       <updated>1731548581379</updated>
       <workItem from="1731548582739" duration="798000" />
       <workItem from="1731549398321" duration="94000" />
-      <workItem from="1731549518453" duration="531000" />
+      <workItem from="1731549518453" duration="2820000" />
     </task>
     <task id="LOCAL-00001" summary="feat: create files">
       <option name="closed" value="true" />
@@ -127,7 +128,23 @@
       <option name="project" value="LOCAL" />
       <updated>1731549358809</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="feat: create MLDataFetcher and methods">
+      <option name="closed" value="true" />
+      <created>1731550424080</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1731550424080</updated>
+    </task>
+    <task id="LOCAL-00003" summary="feat: create endpoints MLDataFetcher">
+      <option name="closed" value="true" />
+      <created>1731550489212</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1731550489212</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -146,7 +163,9 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="feat: create files" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: create files" />
+    <MESSAGE value="feat: create MLDataFetcher and methods" />
+    <MESSAGE value="feat: create endpoints MLDataFetcher" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: create endpoints MLDataFetcher" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/meli_data_engineer_challenge$meli_data_engineer_challenge.coverage" NAME="meli_data_engineer_challenge Coverage Results" MODIFIED="1731549558392" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />

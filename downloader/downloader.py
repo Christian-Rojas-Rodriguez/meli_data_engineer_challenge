@@ -25,9 +25,11 @@ class MLDataFetcher:
         response.raise_for_status()  # Levanta una excepción en caso de error HTTP
         return response.json().get("results", [])
 
-    def save_data(self, data, filename="data.json"):
+    @staticmethod
+    def save_data(data, filename="data.json"):
         with open(filename, "w") as f:
             json.dump(data, f, indent=4)
 
-    def log_error(self, error_message):
+    @staticmethod
+    def log_error(error_message):
         print(f"Error: {error_message}")
