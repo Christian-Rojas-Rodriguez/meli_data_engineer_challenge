@@ -26,12 +26,11 @@ class DataModeler:
         return schema
 
     def create_table(self, table_name, schema):
-        dataset_ref = self.client.dataset(self.dataset_id)
-        table_ref = dataset_ref.table(table_name)
+        dataset_ref = f"{self.project_id}.{self.dataset_id}"  # String en lugar de `self.client.dataset`
+        table_ref = bigquery.TableReference.from_string(f"{dataset_ref}.{table_name}")
         table = bigquery.Table(table_ref, schema=schema)
-
         try:
-            table = self.client.create_table(table)  # Crea la tabla en BigQuery
+            table = self.client.create_table(table)
             print(f"Tabla {table_name} creada exitosamente.")
         except Exception as e:
             self.log_error(f"Error al crear la tabla {table_name}: {e}")

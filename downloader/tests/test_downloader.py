@@ -36,10 +36,11 @@ class TestMLDataFetcher(unittest.TestCase):
         data = [{"id": "1"}, {"id": "2"}]
         self.fetcher.save_data(data, filename="test_data.json")
 
-        # Verifica que el archivo se abrió correctamente y los datos se escribieron
         mock_open.assert_called_once_with("test_data.json", "w")
-        mock_open().write.assert_called_once()
-        saved_data = json.loads(mock_open().write.call_args[0][0])
+
+        written_data = "".join(call[0][0] for call in mock_open().write.call_args_list)
+        saved_data = json.loads(written_data)
+
         self.assertEqual(saved_data, data)
 
     def test_log_error(self):

@@ -1,3 +1,5 @@
 Flask
 pandas
 google-cloud-bigquery
+coverage
+pytest

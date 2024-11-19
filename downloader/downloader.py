@@ -1,7 +1,6 @@
 import requests
 import json
 
-
 class MLDataFetcher:
     def __init__(self, query, limit=50, total_results=500):
         self.query = query

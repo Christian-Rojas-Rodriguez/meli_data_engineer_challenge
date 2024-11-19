@@ -1,2 +1,4 @@
 Flask
+coverage
+pytest
 requests
