@@ -1,62 +1,94 @@
-import os
+from google.cloud import bigquery
 import lkml
+import os
+
 
 class LookMLGenerator:
-    def __init__(self, output_dir):
-        self.output_dir = output_dir
+    def __init__(self, project_id, dataset_id):
+        self.project_id = project_id
+        self.dataset_id = dataset_id
+        self.client = bigquery.Client(project=project_id)
+        self.views = {}
+        self.explore = None
 
-    def generate_view(self, table_name, fields):
-        try:
-            view = {
-                "view": {
-                    "name": table_name,
-                    "fields": [
-                        {
-                            "dimension": {
-                                "name": field["name"],
-                                "type": field["type"],
-                                "sql": f"${{TABLE}}.{field['name']} ;;"
-                            }
-                        } for field in fields
-                    ]
-                }
+    def fetch_table_schema(self, table_name):
+        table_ref = f"{self.project_id}.{self.dataset_id}.{table_name}"
+        table = self.client.get_table(table_ref)
+        return [{"name": field.name, "type": field.field_type} for field in table.schema]
+
+    def create_view(self, table_name):
+        fields = self.fetch_table_schema(table_name)
+        view = {
+            "view": {
+                "name": table_name,
+                "sql_table_name": f"{self.project_id}.{self.dataset_id}.{table_name}",
+                "fields": [
+                    {"name": field["name"], "type": self.map_field_type(field["type"])}
+                    for field in fields
+                ]
             }
-            output_path = f"{table_name}.view.lkml"
-            self.write_lookml_file(view, output_path)
-            print(f"Archivo generado: {output_path}")
-        except Exception as e:
-            self.log_error(f"Error al generar view para {table_name}: {e}")
+        }
+        self.views[table_name] = view
 
-    def generate_explore(self, explore_name, joins):
-        try:
-            explore = {
-                "explore": {
-                    "name": explore_name,
-                    "joins": [
-                        {
-                            "join": {
-                                "name": join["table"],
-                                "type": join["type"],
-                                "sql_on": join["condition"]
-                            }
-                        } for join in joins
-                    ]
+    def get_created_views(self):
+        if not self.views:
+            return {"status": "error", "message": "No se han creado views aún."}
+
+        return {
+            "status": "success",
+            "views": [
+                {
+                    "name": view["view"]["name"],
+                    "sql_table_name": view["view"]["sql_table_name"],
+                    "fields": view["view"]["fields"]
                 }
+                for view in self.views.values()
+            ]
+        }
+
+    def create_explore(self, explore_name, joins):
+        explore = {
+            "explore": {
+                "name": explore_name,
+                "joins": [
+                    {
+                        "name": join["view_name"],
+                        "type": join.get("type", "left_outer"),
+                        "sql_on": join["sql_on"]
+                    }
+                    for join in joins
+                ]
             }
-            output_path = f"{explore_name}.explore.lkml"
-            self.write_lookml_file(explore, output_path)
-            print(f"Archivo generado: {output_path}")
-        except Exception as e:
-            self.log_error(f"Error al generar explore {explore_name}: {e}")
+        }
+        self.explore = explore
 
-    def write_lookml_file(self, lookml_object, file_name):
-        try:
-            os.makedirs(self.output_dir, exist_ok=True)
-            output_path = os.path.join(self.output_dir, file_name)
-            with open(output_path, "w") as file:
-                file.write(lkml.dump(lookml_object))
-        except Exception as e:
-            self.log_error(f"Error al escribir archivo {file_name}: {e}")
+    import os
 
-    def log_error(self, message):
-        print(f"Error: {message}")
+    def generate_view_files(self, output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+        for table_name, view in self.views.items():
+            file_path = f"{output_dir}/{table_name}.view.lkml"
+            with open(file_path, "w") as file:
+                file.write(lkml.dump(view))
+            print(f"Archivo generado: {file_path}")
+
+    def generate_explore_file(self, output_dir, explore_name):
+        os.makedirs(output_dir, exist_ok=True)  # Crea el directorio si no existe
+        if not self.explore:
+            raise ValueError(f"No se encontró la definición del explore: {explore_name}")
+
+        file_path = f"{output_dir}/{explore_name}.explore.lkml"
+        with open(file_path, "w") as file:
+            file.write(lkml.dump(self.explore))
+        print(f"Archivo generado: {file_path}")
+
+    @staticmethod
+    def map_field_type(field_type):
+        mapping = {
+            "STRING": "string",
+            "INTEGER": "number",
+            "FLOAT": "number",
+            "BOOL": "yesno",
+            "BOOLEAN": "yesno"
+        }
+        return mapping.get(field_type, "string")

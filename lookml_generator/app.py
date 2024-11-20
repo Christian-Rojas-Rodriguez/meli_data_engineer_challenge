@@ -3,63 +3,62 @@ from lookml_generator import LookMLGenerator
 
 app = Flask(__name__)
 
-OUTPUT_DIR = "lookml_files"
-lookml_generator = LookMLGenerator(output_dir=OUTPUT_DIR)
+lookml_generator = LookMLGenerator(project_id="meli-prueba-data", dataset_id="meli_dataset")
 
-@app.route('/generate_view', methods=['POST'])
-def generate_view():
+
+@app.route("/generate_views", methods=["POST"])
+def generate_views():
     try:
-        data = request.json
-        table_name = data.get("table_name")
-        fields = data.get("fields")
+        data = request.get_json()
+        table_names = data["table_names"]
 
-        if not table_name or not fields:
-            return jsonify({
-                "status": "error",
-                "message": "El campo 'table_name' y la lista 'fields' son obligatorios."
-            }), 400
+        for table_name in table_names:
+            lookml_generator.create_view(table_name)
 
-        lookml_generator.generate_view(table_name, fields)
-        return jsonify({
-            "status": "success",
-            "message": f"Archivo {table_name}.view.lkml generado exitosamente."
-        }), 200
-
+        return jsonify({"status": "success", "message": "Views generadas correctamente."}), 200
     except Exception as e:
-        lookml_generator.log_error(str(e))
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+@app.route("/get_views", methods=["GET"])
+def get_views():
+    try:
+        result = lookml_generator.get_created_views()
+        return jsonify(result), 200 if result["status"] == "success" else 400
+    except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route('/generate_explore', methods=['POST'])
+@app.route("/generate_explore", methods=["POST"])
 def generate_explore():
     try:
-        data = request.json
-        explore_name = data.get("explore_name")
-        joins = data.get("joins")
+        data = request.get_json()
+        explore_name = data["explore_name"]
+        joins = data["joins"]
 
-        if not explore_name or not joins:
-            return jsonify({
-                "status": "error",
-                "message": "El campo 'explore_name' y la lista 'joins' son obligatorios."
-            }), 400
-
-        lookml_generator.generate_explore(explore_name, joins)
-        return jsonify({
-            "status": "success",
-            "message": f"Archivo {explore_name}.explore.lkml generado exitosamente."
-        }), 200
-
+        lookml_generator.create_explore(explore_name, joins)
+        return jsonify({"status": "success", "message": f"Explore {explore_name} generado correctamente."}), 200
     except Exception as e:
-        lookml_generator.log_error(str(e))
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({
-        "status": "ok",
-        "message": "El servicio LookML Generator está funcionando correctamente."
-    }), 200
+@app.route("/export_lookml", methods=["POST"])
+def export_lookml():
+    try:
+        data = request.get_json()
+        print("Recibe el json")
+        output_dir = data.get("output_dir")
+        explore_name = data.get("explore_name")
+        print("Se dividio el json")
+
+        if not output_dir or not explore_name:
+            raise ValueError("Los campos 'output_dir' y 'explore_name' son obligatorios.")
+
+        lookml_generator.generate_view_files(output_dir)
+        lookml_generator.generate_explore_file(output_dir, explore_name)
+
+        return jsonify({"status": "success", "message": "Archivos LookML exportados."}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
 
 
 if __name__ == "__main__":
