@@ -40,6 +40,14 @@ def generate_explore():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+@app.route("/get_explore", methods=["GET"])
+def get_explore():
+    try:
+        result = lookml_generator.get_explore()
+        return jsonify(result), 200 if result["status"] == "success" else 400
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 @app.route("/export_lookml", methods=["POST"])
 def export_lookml():

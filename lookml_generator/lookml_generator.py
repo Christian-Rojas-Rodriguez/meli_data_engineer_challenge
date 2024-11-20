@@ -62,7 +62,11 @@ class LookMLGenerator:
         }
         self.explore = explore
 
-    import os
+    def get_explore(self):
+        if not hasattr(self, "explore") or not self.explore:
+            return {"status": "error", "message": "No se ha creado ningún explore aún."}
+
+        return {"status": "success", "explore": self.explore}
 
     def generate_view_files(self, output_dir):
         os.makedirs(output_dir, exist_ok=True)
