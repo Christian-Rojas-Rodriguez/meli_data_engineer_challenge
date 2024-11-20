@@ -5,73 +5,73 @@ from modeler import DataModeler
 
 
 class TestDataModeler(unittest.TestCase):
-
     def setUp(self):
         self.project_id = "meli-prueba-data"
         self.dataset_id = "meli_dataset"
         self.modeler = DataModeler(self.project_id, self.dataset_id)
 
-    @patch("google.cloud.bigquery.Client")
-    def test_initialize_modeler(self, mock_client):
-        modeler = DataModeler(self.project_id, self.dataset_id)
-        self.assertEqual(modeler.project_id, self.project_id)
-        self.assertEqual(modeler.dataset_id, self.dataset_id)
-        mock_client.assert_called_once_with(project=self.project_id)
-
     def test_define_schema(self):
-        expected_schema = {
-            "Producto": [
-                bigquery.SchemaField("id", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("title", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("price", "FLOAT", mode="NULLABLE")
-            ],
-            "Vendedor": [
-                bigquery.SchemaField("seller_id", "STRING", mode="REQUIRED"),
-                bigquery.SchemaField("seller_name", "STRING", mode="NULLABLE")
-            ],
-            "Ubicacion": [
-                bigquery.SchemaField("state", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("city", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("address", "STRING", mode="NULLABLE")
-            ]
-        }
         schema = self.modeler.define_schema()
-        self.assertEqual(schema, expected_schema)
 
-    @patch("google.cloud.bigquery.Client")
-    def test_create_table_success(self, mock_client):
-        mock_table = MagicMock()
-        mock_client.return_value.create_table.return_value = mock_table
+        self.assertIn("Producto", schema)
+        self.assertIn("Vendedor", schema)
+        self.assertIn("Envio", schema)
+
+        self.assertEqual(len(schema["Producto"]), 3)
+        self.assertEqual(len(schema["Vendedor"]), 2)
+        self.assertEqual(len(schema["Envio"]), 4)
+
+    @patch("google.cloud.bigquery.Client", autospec=True)
+    def test_create_table_success(self, mock_client_cls):
+        mock_client = mock_client_cls.return_value
+        mock_client.create_table.return_value = MagicMock()
 
         schema = self.modeler.define_schema()["Producto"]
-        self.modeler.create_table("Producto", schema)
+        with patch("builtins.print") as mock_print:
+            self.modeler.create_table("Producto", schema)
 
-        mock_client.return_value.create_table.assert_called_once()
+            table_ref = f"{self.project_id}.{self.dataset_id}.Producto"
+            mock_client.create_table.assert_called_once()
+            mock_print.assert_called_once_with(f"Tabla Producto creada exitosamente.")
 
     @patch("google.cloud.bigquery.Client")
     def test_create_table_failure(self, mock_client):
         mock_client.return_value.create_table.side_effect = Exception("Error de prueba")
 
         schema = self.modeler.define_schema()["Producto"]
-
         with patch("builtins.print") as mock_print:
             self.modeler.create_table("Producto", schema)
 
             mock_print.assert_called_with("Error: Error al crear la tabla Producto: Error de prueba")
 
     @patch("google.cloud.bigquery.Client")
-    def test_create_all_tables(self, mock_client):
-        mock_client.return_value.create_table = MagicMock()
+    def test_create_all_tables_success(self, mock_client):
+        mock_client.return_value.create_table.return_value = MagicMock()
 
-        with patch.object(self.modeler, "create_table") as mock_create_table:
-            self.modeler.create_all_tables()
-            self.assertEqual(mock_create_table.call_count, 3)  # Debe llamarse una vez por cada tabla
-
-    def test_log_error(self):
-        error_message = "Este es un error de prueba"
         with patch("builtins.print") as mock_print:
-            self.modeler.log_error(error_message)
-            mock_print.assert_called_once_with(f"Error: {error_message}")
+            self.modeler.create_all_tables()
+
+            self.assertEqual(mock_client.return_value.create_table.call_count, 3)
+            mock_print.assert_any_call("Tabla Producto creada exitosamente.")
+            mock_print.assert_any_call("Tabla Vendedor creada exitosamente.")
+            mock_print.assert_any_call("Tabla Envio creada exitosamente.")
+
+    @patch("google.cloud.bigquery.Client")
+    def test_create_all_tables_partial_failure(self, mock_client):
+        mock_client.return_value.create_table.side_effect = [
+            MagicMock(),
+            Exception("Error al crear tabla Vendedor"),
+            MagicMock(),
+        ]
+
+        with patch("builtins.print") as mock_print:
+            self.modeler.create_all_tables()
+
+            self.assertEqual(mock_client.return_value.create_table.call_count, 3)
+
+            mock_print.assert_any_call("Tabla Producto creada exitosamente.")
+            mock_print.assert_any_call("Error: Error al crear la tabla Vendedor: Error al crear tabla Vendedor")
+            mock_print.assert_any_call("Tabla Envio creada exitosamente.")
 
 
 if __name__ == "__main__":

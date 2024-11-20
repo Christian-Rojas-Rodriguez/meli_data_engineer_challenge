@@ -1,12 +1,11 @@
 from flask import Flask, jsonify
 from parser import DataParser
-import pandas as pd
 
 app = Flask(__name__)
 
 INPUT_FILE = "downloader/data.json"
 PROJECT_ID = "meli-prueba-data"
-DATASET_ID = ("meli_dataset")
+DATASET_ID = "meli_dataset"
 
 @app.route('/etl', methods=['POST'])
 def run_etl():

@@ -1,2 +1,4 @@
 Flask
 lkml
+coverage
+pytest

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "title": "Producto 1",
+    "price": 100.0,
+    "seller": {
+      "id": 12345,
+      "nickname": "SellerName"
+    },
+    "shipping": {
+      "free_shipping": true,
+      "logistic_type": "cross_docking",
+      "mode": "me2",
+      "store_pick_up": false,
+      "benefits": "extra"
+    }
+  }
+]

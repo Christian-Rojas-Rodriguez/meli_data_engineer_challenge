@@ -6,7 +6,8 @@ class DataModeler:
         self.dataset_id = dataset_id
         self.client = bigquery.Client(project=project_id)
 
-    def define_schema(self):
+    @staticmethod
+    def define_schema():
         schema = {
             "Producto": [
                 bigquery.SchemaField("id", "STRING", mode="REQUIRED"),
@@ -17,16 +18,17 @@ class DataModeler:
                 bigquery.SchemaField("seller_id", "STRING", mode="REQUIRED"),
                 bigquery.SchemaField("seller_name", "STRING", mode="NULLABLE")
             ],
-            "Ubicacion": [
-                bigquery.SchemaField("state", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("city", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("address", "STRING", mode="NULLABLE")
+            "Envio": [
+                bigquery.SchemaField("is_free_shipping", "BOOL", mode="NULLABLE"),
+                bigquery.SchemaField("logistic_type", "STRING", mode="NULLABLE"),
+                bigquery.SchemaField("shipping_mode", "STRING", mode="NULLABLE"),
+                bigquery.SchemaField("store_pick_up", "BOOL", mode="NULLABLE")
             ]
         }
         return schema
 
     def create_table(self, table_name, schema):
-        dataset_ref = f"{self.project_id}.{self.dataset_id}"  # String en lugar de `self.client.dataset`
+        dataset_ref = f"{self.project_id}.{self.dataset_id}"
         table_ref = bigquery.TableReference.from_string(f"{dataset_ref}.{table_name}")
         table = bigquery.Table(table_ref, schema=schema)
         try:

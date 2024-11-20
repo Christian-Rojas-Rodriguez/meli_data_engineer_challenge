@@ -28,17 +28,31 @@ class DataParser:
 
         self.dataframes["Producto"] = df[["id", "title", "price"]]
 
-        self.dataframes["Vendedor"] = df[["seller"]].apply(
-            lambda x: pd.json_normalize(x["seller"]), axis=1
-        ).rename(columns={"id": "seller_id", "nickname": "seller_name"})
+        if "seller" in df.columns:
+            sellers = df["seller"].apply(lambda x: pd.json_normalize(x) if isinstance(x, dict) else pd.DataFrame())
+            self.dataframes["Vendedor"] = pd.concat(sellers.tolist(), ignore_index=True).rename(
+                columns={"id": "seller_id", "nickname": "seller_name"}
+            )
 
-        self.dataframes["Ubicacion"] = pd.json_normalize(df["address"]).rename(
-            columns={"state_name": "state", "city_name": "city", "address_line": "address"}
-        )
+        if "shipping" in df.columns:
+            shipping_df = pd.json_normalize(df["shipping"]).rename(
+                columns={
+                    "free_shipping": "is_free_shipping",
+                    "logistic_type": "logistic_type",
+                    "mode": "shipping_mode",
+                    "store_pick_up": "store_pick_up"
+                }
+            )
+
+            shipping_df = shipping_df.drop(columns=["benefits", "promise", "tags", "shipping_score"], errors="ignore")
+            self.dataframes["Envio"] = shipping_df
 
     def load(self):
         for table_name, df in self.dataframes.items():
             if df is not None:
+                for column in df.select_dtypes(include=["int64"]).columns:
+                    df[column] = df[column].astype(str)
+
                 table_id = f"{self.project_id}.{self.dataset_id}.{table_name}"
                 try:
                     self.client.load_table_from_dataframe(df, table_id).result()
