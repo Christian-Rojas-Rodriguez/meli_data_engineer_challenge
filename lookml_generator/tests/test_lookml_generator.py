@@ -11,7 +11,6 @@ class TestLookMLGenerator(unittest.TestCase):
 
     @patch("google.cloud.bigquery.Client")
     def test_fetch_table_schema(self, mock_client):
-        # Simula el esquema de una tabla
         mock_table = MagicMock()
         mock_table.schema = [
             MagicMock(name="id", field_type="STRING"),
@@ -27,7 +26,6 @@ class TestLookMLGenerator(unittest.TestCase):
 
     @patch("lookml_generator.LookMLGenerator.fetch_table_schema")
     def test_create_view(self, mock_fetch_schema):
-        # Simula los resultados del esquema de una tabla
         mock_fetch_schema.return_value = [
             {"name": "id", "type": "STRING"},
             {"name": "price", "type": "FLOAT"}
@@ -47,7 +45,6 @@ class TestLookMLGenerator(unittest.TestCase):
         })
 
     def test_get_created_views(self):
-        # Agrega una vista manualmente para probar el método
         self.generator.views = {
             "test_table": {
                 "view": {
@@ -64,7 +61,6 @@ class TestLookMLGenerator(unittest.TestCase):
         self.assertEqual(result["views"][0]["name"], "test_table")
 
     def test_get_created_views_no_views(self):
-        # Sin vistas creadas
         self.generator.views = {}
         result = self.generator.get_created_views()
         self.assertEqual(result["status"], "error")
@@ -101,7 +97,6 @@ class TestLookMLGenerator(unittest.TestCase):
     @patch("builtins.open", new_callable=unittest.mock.mock_open)
     @patch("lkml.dump")
     def test_generate_view_files(self, mock_lkml_dump, mock_open, mock_makedirs):
-        # Simula la existencia de una vista
         self.generator.views = {
             "test_table": {
                 "view": {
@@ -123,7 +118,6 @@ class TestLookMLGenerator(unittest.TestCase):
     @patch("builtins.open", new_callable=unittest.mock.mock_open)
     @patch("lkml.dump")
     def test_generate_explore_file(self, mock_lkml_dump, mock_open, mock_makedirs):
-        # Simula la existencia de un explore
         self.generator.explore = {
             "explore": {
                 "name": "test_explore",
