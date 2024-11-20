@@ -53,10 +53,8 @@ def get_explore():
 def export_lookml():
     try:
         data = request.get_json()
-        print("Recibe el json")
         output_dir = data.get("output_dir")
         explore_name = data.get("explore_name")
-        print("Se dividio el json")
 
         if not output_dir or not explore_name:
             raise ValueError("Los campos 'output_dir' y 'explore_name' son obligatorios.")

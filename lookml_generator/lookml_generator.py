@@ -67,17 +67,35 @@ class LookMLGenerator:
             return {"status": "error", "message": "No se ha creado ningún explore aún."}
 
         return {"status": "success", "explore": self.explore}
-
+    """
     def generate_view_files(self, output_dir):
         os.makedirs(output_dir, exist_ok=True)
+        if not isinstance(self.views, dict):
+            raise ValueError("self.views debe ser un diccionario con vistas")
         for table_name, view in self.views.items():
             file_path = f"{output_dir}/{table_name}.view.lkml"
             with open(file_path, "w") as file:
                 file.write(lkml.dump(view))
             print(f"Archivo generado: {file_path}")
+    """
+    def generate_view_files(self, output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+        print(f"Views recibidos: {self.views}")
+        for table_name, view in self.views.items():
+            print(f"Procesando: {table_name}, View: {view}")
+            file_path = f"{output_dir}/{table_name}.view.lkml"
+        with open(file_path, "w") as file:
+            try:
+                file.write(lkml.dumps(view))
+                print(f"Archivo generado: {file_path}")
+            except Exception as e:
+                print(f"Error al escribir el archivo: {e}")
+                raise
+
 
     def generate_explore_file(self, output_dir, explore_name):
-        os.makedirs(output_dir, exist_ok=True)  # Crea el directorio si no existe
+        os.makedirs(output_dir, exist_ok=True)
+
         if not self.explore:
             raise ValueError(f"No se encontró la definición del explore: {explore_name}")
 
